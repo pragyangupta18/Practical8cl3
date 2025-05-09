@@ -1,0 +1,40 @@
+1 st terminal - 
+Last login: Fri May  9 22:06:43 on ttys001
+(base) pragyan@Pragyans-MacBook-Air ~ % pip install pyro5
+Collecting pyro5
+  Downloading Pyro5-5.15-py3-none-any.whl.metadata (4.9 kB)
+Collecting serpent>=1.41 (from pyro5)
+  Downloading serpent-1.41-py3-none-any.whl.metadata (5.8 kB)
+Downloading Pyro5-5.15-py3-none-any.whl (79 kB)
+Downloading serpent-1.41-py3-none-any.whl (9.6 kB)
+Installing collected packages: serpent, pyro5
+Successfully installed pyro5-5.15 serpent-1.41
+(base) pragyan@Pragyans-MacBook-Air ~ % pyro5-ns
+
+Not starting broadcast server for IPv6.
+NS running on localhost:9090 (::1)
+URI = PYRO:Pyro.NameServer@localhost:9090
+
+
+
+
+2nd terminal - 
+Last login: Fri May  9 22:40:45 on ttys001
+(base) pragyan@Pragyans-MacBook-Air ~ % cd Desktop               
+(base) pragyan@Pragyans-MacBook-Air Desktop % cd practical2          
+(base) pragyan@Pragyans-MacBook-Air practical2 % python concatserver.py 
+
+ConcatService is ready: PYRO:obj_e2ce1874818c4504bf52ab73e45c55b6@localhost:61836
+Serving request: 'hello' + 'World'
+
+
+3rd terminal - 
+Last login: Fri May  9 22:42:07 on ttys001
+(base) pragyan@Pragyans-MacBook-Air ~ % cd Desktop             
+(base) pragyan@Pragyans-MacBook-Air Desktop % cd practical2          
+(base) pragyan@Pragyans-MacBook-Air practical2 % python concatclient.py 
+
+Enter first string : hello
+Enter second string: World
+Server returned: helloWorld
+(base) pragyan@Pragyans-MacBook-Air practical2 % 
