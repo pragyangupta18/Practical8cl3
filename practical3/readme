@@ -1,0 +1,151 @@
+Here's a Python-based distributed application using **MapReduce under Hadoop** to perform:
+
+**a) Character counting**, and
+**b) Word counting**,
+
+using the **Hadoop Streaming API** and Python scripts (`mapper.py` and `reducer.py`).
+
+---
+
+## 🔧 Prerequisites:
+
+* Hadoop installed and configured
+* Python 3
+* A text input file (e.g., `input.txt`)
+
+---
+
+## 📁 Directory Structure:
+
+```
+mapreduce_char_word_count/
+│
+├── input.txt
+├── char_mapper.py
+├── char_reducer.py
+├── word_mapper.py
+├── word_reducer.py
+```
+
+---
+
+## ✅ a) Character Counting
+
+### `char_mapper.py`
+
+```python
+#!/usr/bin/env python3
+import sys
+
+for line in sys.stdin:
+    line = line.strip()
+    for char in line:
+        if char != " ":
+            print(f"{char}\t1")
+```
+
+### `char_reducer.py`
+
+```python
+#!/usr/bin/env python3
+import sys
+
+current_char = None
+current_count = 0
+
+for line in sys.stdin:
+    char, count = line.strip().split('\t')
+    count = int(count)
+
+    if char == current_char:
+        current_count += count
+    else:
+        if current_char:
+            print(f"{current_char}\t{current_count}")
+        current_char = char
+        current_count = count
+
+if current_char:
+    print(f"{current_char}\t{current_count}")
+```
+
+---
+
+## ✅ b) Word Counting
+
+### `word_mapper.py`
+
+```python
+#!/usr/bin/env python3
+import sys
+
+for line in sys.stdin:
+    words = line.strip().split()
+    for word in words:
+        print(f"{word.lower()}\t1")
+```
+
+### `word_reducer.py`
+
+```python
+#!/usr/bin/env python3
+import sys
+
+current_word = None
+current_count = 0
+
+for line in sys.stdin:
+    word, count = line.strip().split('\t')
+    count = int(count)
+
+    if word == current_word:
+        current_count += count
+    else:
+        if current_word:
+            print(f"{current_word}\t{current_count}")
+        current_word = word
+        current_count = count
+
+if current_word:
+    print(f"{current_word}\t{current_count}")
+```
+
+---
+
+## 🧪 How to Run on Hadoop (Linux):
+
+### 1. Put your text file in HDFS:
+
+```bash
+hdfs dfs -mkdir /input
+hdfs dfs -put input.txt /input
+```
+
+### 2. Run Character Count:
+
+```bash
+hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming.jar \
+-file char_mapper.py -mapper char_mapper.py \
+-file char_reducer.py -reducer char_reducer.py \
+-input /input/input.txt -output /output_char
+```
+
+### 3. Run Word Count:
+
+```bash
+hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming.jar \
+-file word_mapper.py -mapper word_mapper.py \
+-file word_reducer.py -reducer word_reducer.py \
+-input /input/input.txt -output /output_word
+```
+
+### 4. View Output:
+
+```bash
+hdfs dfs -cat /output_char/part-00000
+hdfs dfs -cat /output_word/part-00000
+```
+
+---
+
+Would you like me to bundle these as downloadable `.py` files or create a shell script to automate this?
