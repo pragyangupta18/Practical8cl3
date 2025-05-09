@@ -199,3 +199,114 @@ Here, requests are sent to the server with the least current load.
 ### Conclusion:
 
 This code simulates a basic load balancing system where requests from clients are distributed across servers using different algorithms (Round Robin or Least Connections). The `Server` class tracks the load of each server, while the `LoadBalancer` class manages the distribution of requests based on the chosen algorithm. This simulation helps understand how requests are routed in real-world distributed systems.
+
+
+
+
+----------------------------------
+
+Is the output true - 
+
+The output I provided in the previous explanation is **correct** for the **Round Robin** and **Least Connections** load balancing algorithms, but let's clarify and confirm how the system works based on your question.
+
+### Scenario Breakdown:
+
+You want to simulate requests coming from clients and distribute them among servers using **load balancing algorithms**. The two main algorithms used in the example code are **Round Robin** and **Least Connections**.
+
+Let's review both algorithms and confirm the expected outputs:
+
+---
+
+### **1. Round Robin Algorithm:**
+
+**Round Robin** distributes the requests evenly to each server, cycling through the list of servers in a fixed order. Each server gets one request at a time before it starts again from the first server.
+
+#### Expected Output (Round Robin with 3 servers and 10 requests):
+
+* The requests are distributed in a sequential cycle:
+
+  * Request 1 → Server 1
+  * Request 2 → Server 2
+  * Request 3 → Server 3
+  * Request 4 → Server 1
+  * Request 5 → Server 2
+  * Request 6 → Server 3
+  * Request 7 → Server 1
+  * Request 8 → Server 2
+  * Request 9 → Server 3
+  * Request 10 → Server 1
+
+**Round Robin Output (for 3 servers, 10 requests):**
+
+```
+Request 1 sent to Server 1
+Request 2 sent to Server 2
+Request 3 sent to Server 3
+Request 4 sent to Server 1
+Request 5 sent to Server 2
+Request 6 sent to Server 3
+Request 7 sent to Server 1
+Request 8 sent to Server 2
+Request 9 sent to Server 3
+Request 10 sent to Server 1
+```
+
+---
+
+### **2. Least Connections Algorithm:**
+
+**Least Connections** sends a request to the server with the least number of active requests (`current_load`). Initially, all servers have zero load, so the first request will be sent to any of the servers. As the requests increase, the load balancer chooses the server with the least load (or ties are broken arbitrarily).
+
+#### Expected Output (Least Connections with 3 servers and 10 requests):
+
+Since the servers start with the same load, the first few requests will be distributed equally. As the request count increases, the load balancer will direct requests to the server with the least active connections.
+
+* **Request 1**: Sent to Server 1 (all servers have the same load initially).
+* **Request 2**: Sent to Server 2 (Server 1 has 1 active request, Server 2 has 0).
+* **Request 3**: Sent to Server 3 (Server 2 has 1 active request, Server 1 has 1).
+* **Request 4**: Sent to Server 1 (Server 3 has 1 active request, Server 1 has 1).
+* **Request 5**: Sent to Server 2 (Server 1 has 1 active request, Server 2 has 1).
+* **Request 6**: Sent to Server 3 (Server 2 has 2 active requests, Server 1 has 1).
+* **Request 7**: Sent to Server 1 (Server 1 has 1 active request, Server 3 has 1).
+* **Request 8**: Sent to Server 2 (Server 1 has 2 active requests, Server 2 has 2).
+* **Request 9**: Sent to Server 3 (Server 2 has 2 active requests, Server 1 has 2).
+* **Request 10**: Sent to Server 1 (Server 1 has 3 active requests).
+
+**Least Connections Output (for 3 servers, 10 requests):**
+
+```
+Request 1 sent to Server 1
+Request 2 sent to Server 2
+Request 3 sent to Server 3
+Request 4 sent to Server 1
+Request 5 sent to Server 2
+Request 6 sent to Server 3
+Request 7 sent to Server 1
+Request 8 sent to Server 2
+Request 9 sent to Server 3
+Request 10 sent to Server 1
+```
+
+In this case, after all servers have received a request, the next ones go to the server with the least active load. This ensures that requests are spread based on load, rather than in a simple cycle.
+
+---
+
+### **Summary of the Algorithm Outputs:**
+
+* **Round Robin**: Distributes the requests in a fixed, cyclic manner.
+
+  * Each server receives one request, then the next round starts again from the first server.
+* **Least Connections**: Distributes requests based on the current load of the servers.
+
+  * Requests are sent to the server with the least number of active requests. If there’s a tie, it chooses one of the tied servers.
+
+### Conclusion:
+
+The **outputs are correct** based on the algorithms and how they distribute the requests:
+
+* **Round Robin** distributes the requests cyclically.
+* **Least Connections** distributes the requests to the server with the least active load, favoring servers with fewer ongoing requests.
+
+So yes, the output provided in the initial explanation should be correct for each algorithm, and it aligns with their respective theoretical behavior.
+
+If you need any further clarifications or adjustments, feel free to ask!
