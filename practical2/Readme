@@ -1,0 +1,192 @@
+Sure! Let's break everything down step by step — **code + theory** — so you fully understand how a **distributed Python application** using **RMI-style communication** with **Pyro5** works.
+
+---
+
+## 🧠 What Are We Building?
+
+A **Remote Method Invocation (RMI)**-style application in Python:
+
+* **Client** sends **two strings** to the server.
+* **Server** has a method (`concat`) that **concatenates** those strings.
+* The **result** is returned to the client.
+
+We’ll use **Pyro5 (Python Remote Objects)** — a library that allows Python objects to **communicate over the network** as if they were local.
+
+---
+
+## 🛠 Step-by-Step Setup
+
+---
+
+### ✅ 1. Install Pyro5
+
+First, you need to install `Pyro5`, the library that enables Python RMI:
+
+```bash
+pip install Pyro5
+```
+
+---
+
+### ✅ 2. Start the Pyro Name Server (One-time Setup)
+
+The **Name Server** is like a "directory" — it lets clients find servers using names (like `"example.concat"`).
+
+Run this in **a separate terminal**:
+
+```bash
+pyro5-ns
+```
+
+You should see:
+
+```
+Pyro5 nameserver running on host localhost (127.0.0.1)
+```
+
+✅ Keep this terminal open — it must be running in the background.
+
+---
+
+## 📁 Your Project Folder (`practical2/`)
+
+Make sure you create this folder:
+
+```
+Desktop/
+└── practical2/
+    ├── concat_server.py
+    └── concat_client.py
+```
+
+---
+
+## 🖥 3. Server Code (`concat_server.py`)
+
+```python
+# concat_server.py
+from Pyro5.api import expose, Daemon, locate_ns
+
+@expose  # Makes this class/method available over the network
+class ConcatService:
+    def concat(self, a: str, b: str) -> str:
+        print(f"Serving request: {a} + {b}")
+        return a + b  # core logic: combine strings
+
+def main():
+    ns = locate_ns()  # Locate the Name Server
+    with Daemon() as daemon:  # Start a network daemon
+        uri = daemon.register(ConcatService)  # Register our class as a remote object
+        ns.register("example.concat", uri)    # Give it a logical name in the name server
+        print("Server is ready.")
+        daemon.requestLoop()  # Start listening for requests
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+### 🔍 Theory for `concat_server.py`
+
+| Line                   | What it Does                                                      |
+| ---------------------- | ----------------------------------------------------------------- |
+| `@expose`              | Tells Pyro to allow this method to be called remotely.            |
+| `concat(self, a, b)`   | Concatenates the two strings sent from the client.                |
+| `locate_ns()`          | Connects to the Pyro name server running in background.           |
+| `Daemon()`             | Starts a Pyro network daemon (like a lightweight server).         |
+| `daemon.register(...)` | Registers your Python class as a remote object.                   |
+| `ns.register(...)`     | Gives your object a name clients can use (like "example.concat"). |
+| `daemon.requestLoop()` | Waits for client requests forever.                                |
+
+---
+
+## 🧑‍💻 4. Client Code (`concat_client.py`)
+
+```python
+# concat_client.py
+from Pyro5.api import locate_ns, Proxy
+
+def main():
+    ns = locate_ns()  # Connect to the name server
+    uri = ns.lookup("example.concat")  # Get the URI for our remote object
+    with Proxy(uri) as remote:  # Create a proxy to the remote object
+        s1 = input("Enter first string : ")
+        s2 = input("Enter second string: ")
+        result = remote.concat(s1, s2)  # Call the server’s concat method
+        print("Server returned:", result)
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+### 🔍 Theory for `concat_client.py`
+
+| Line                 | What it Does                                                     |
+| -------------------- | ---------------------------------------------------------------- |
+| `locate_ns()`        | Finds the Pyro name server.                                      |
+| `ns.lookup(...)`     | Finds the object URI using the name `"example.concat"`.          |
+| `Proxy(uri)`         | Creates a *local* Python object that connects to the remote one. |
+| `remote.concat(...)` | Invokes the `concat` method on the server over the network.      |
+| `print(...)`         | Displays the server’s response (concatenated string).            |
+
+---
+
+## ▶️ How to Run the Whole App (3-Terminal Setup)
+
+### 🧵 Terminal 1: Start Pyro Name Server
+
+```bash
+pyro5-ns
+```
+
+Don't close this. Leave it running.
+
+---
+
+### 🧵 Terminal 2: Run the Server
+
+```bash
+cd ~/Desktop/practical2
+python concat_server.py
+```
+
+You should see:
+
+```
+Server is ready.
+```
+
+---
+
+### 🧵 Terminal 3: Run the Client
+
+```bash
+cd ~/Desktop/practical2
+python concat_client.py
+```
+
+You’ll see:
+
+```
+Enter first string : Hello
+Enter second string: World
+Server returned: HelloWorld
+```
+
+---
+
+## ✅ Recap: What You Just Built
+
+| Component            | Role                                                                      |
+| -------------------- | ------------------------------------------------------------------------- |
+| **Pyro Name Server** | Maps logical names to remote object locations (URIs).                     |
+| **Server**           | Registers a remote object with a `concat` method.                         |
+| **Client**           | Connects to the name server, finds the remote object, calls `concat()`.   |
+| **Pyro5**            | Handles all network communication under the hood (TCP/IP, serialization). |
+
+---
+
+
