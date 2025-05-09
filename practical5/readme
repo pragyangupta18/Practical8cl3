@@ -1,0 +1,201 @@
+Let's break down the code and related theory in detail to understand how it simulates client requests and applies load balancing algorithms:
+
+### Theory of Load Balancing:
+
+Load balancing is a technique used to distribute incoming network traffic across multiple servers to ensure no single server is overwhelmed, improving system performance and availability. There are several load balancing algorithms:
+
+1. **Round Robin**: This is the most straightforward load balancing technique. The load balancer assigns each incoming request to the next server in a cyclic order, regardless of the current load or capacity of the servers.
+
+2. **Least Connections**: The load balancer sends a request to the server that currently has the least number of active connections (requests). This ensures that the load is spread more evenly, based on the server's current workload.
+
+---
+
+### Code Explanation:
+
+#### 1. **Server Class:**
+
+```python
+class Server:
+    def __init__(self, id):
+        self.id = id
+        self.current_load = 0  # Tracks the number of active requests
+        self.total_requests = 0  # Tracks total requests handled
+```
+
+* **Attributes:**
+
+  * `id`: Identifies each server uniquely.
+  * `current_load`: Tracks the current number of active requests that the server is handling.
+  * `total_requests`: Keeps a record of the total number of requests processed by the server.
+
+#### 2. **Methods of the Server Class:**
+
+```python
+    def handle_request(self):
+        self.current_load += 1
+        self.total_requests += 1
+```
+
+* **handle\_request**: This method simulates a server accepting a request. It increases both the `current_load` (active requests being handled) and `total_requests` (the overall count of requests processed by the server).
+
+```python
+    def finish_request(self):
+        self.current_load -= 1
+```
+
+* **finish\_request**: This method simulates the completion of a request. It decreases the `current_load`, representing the reduction in active requests.
+
+---
+
+#### 3. **LoadBalancer Class:**
+
+The `LoadBalancer` class manages multiple servers and distributes requests according to specified algorithms.
+
+```python
+class LoadBalancer:
+    def __init__(self, servers):
+        self.servers = servers
+        self.algorithm = "round_robin"
+        self.last_index = 0
+```
+
+* **Attributes:**
+
+  * `servers`: A list of `Server` objects that the load balancer can choose from.
+  * `algorithm`: Initially set to `"round_robin"`. This is the load balancing algorithm used by default.
+  * `last_index`: Used to track the last server that received a request when using the Round Robin algorithm.
+
+#### 4. **Setting the Load Balancing Algorithm:**
+
+```python
+    def set_algorithm(self, algorithm):
+        self.algorithm = algorithm
+```
+
+* **set\_algorithm**: This method allows you to change the load balancing algorithm dynamically. For example, you can switch from "round\_robin" to "least\_connections".
+
+#### 5. **Round Robin Algorithm:**
+
+```python
+    def round_robin(self, request):
+        server = self.servers[self.last_index]
+        self.last_index = (self.last_index + 1) % len(self.servers)
+        print(f"Request {request} sent to Server {server.id}")
+        server.handle_request()
+```
+
+* **round\_robin**: This method implements the Round Robin algorithm:
+
+  * It selects the server using `self.last_index`, which starts from 0.
+  * After processing a request, `self.last_index` is updated in a cyclic manner (`(self.last_index + 1) % len(self.servers)`), ensuring that requests are distributed equally to all servers in a round-robin fashion.
+  * It then simulates handling the request by invoking `server.handle_request()`.
+
+#### 6. **Least Connections Algorithm:**
+
+```python
+    def least_connections(self, request):
+        server = min(self.servers, key=lambda s: s.current_load)
+        print(f"Request {request} sent to Server {server.id}")
+        server.handle_request()
+```
+
+* **least\_connections**: This method implements the Least Connections algorithm:
+
+  * It selects the server with the least number of active requests (i.e., the server with the minimum `current_load`).
+  * It uses the `min` function, which compares the `current_load` of each server using a lambda function.
+  * Once the server with the least load is selected, it simulates handling the request.
+
+#### 7. **Distribute Request Method:**
+
+```python
+    def distribute_request(self, request):
+        if self.algorithm == "round_robin":
+            self.round_robin(request)
+        elif self.algorithm == "least_connections":
+            self.least_connections(request)
+```
+
+* **distribute\_request**: This method delegates the request handling to the appropriate algorithm. It checks the `algorithm` attribute and calls either `round_robin` or `least_connections` based on the current algorithm.
+
+---
+
+#### 8. **Simulating Client Requests:**
+
+```python
+def simulate_requests(load_balancer, num_requests):
+    for i in range(1, num_requests + 1):
+        load_balancer.distribute_request(i)
+        time.sleep(random.uniform(0.1, 0.5))  # Simulating time between requests
+```
+
+* **simulate\_requests**: This function simulates the arrival of `num_requests` client requests.
+
+  * For each request, it calls `load_balancer.distribute_request(i)` to distribute the request according to the chosen load balancing algorithm.
+  * `time.sleep(random.uniform(0.1, 0.5))` simulates random delays between requests, which mimics real-world request arrival patterns.
+
+#### 9. **Creating Servers and the Load Balancer:**
+
+```python
+servers = [Server(id=i) for i in range(1, 4)]  # 3 servers
+load_balancer = LoadBalancer(servers)
+```
+
+* This creates a list of 3 servers (IDs 1, 2, 3) and initializes a `LoadBalancer` with these servers.
+
+#### 10. **Setting the Load Balancing Algorithm:**
+
+```python
+load_balancer.set_algorithm("round_robin")  # Use round_robin or least_connections
+```
+
+* This line sets the load balancing algorithm to "round\_robin". You can change this to "least\_connections" to switch to the Least Connections algorithm.
+
+#### 11. **Simulating Client Requests:**
+
+```python
+simulate_requests(load_balancer, 10)
+```
+
+* This simulates 10 client requests being distributed across the servers using the set algorithm.
+
+---
+
+### Example Output:
+
+Let’s assume the algorithm is set to **round\_robin** and we have 3 servers. The output will be like this:
+
+```
+Request 1 sent to Server 1
+Request 2 sent to Server 2
+Request 3 sent to Server 3
+Request 4 sent to Server 1
+Request 5 sent to Server 2
+Request 6 sent to Server 3
+Request 7 sent to Server 1
+Request 8 sent to Server 2
+Request 9 sent to Server 3
+Request 10 sent to Server 1
+```
+
+**Explanation of Output:**
+
+* **Round Robin Algorithm**: Requests are distributed to servers in a cyclic manner. The first request goes to Server 1, the second request to Server 2, the third to Server 3, and then the process repeats.
+* The load balancer alternates between servers in a round-robin fashion.
+
+If the **least\_connections** algorithm were used, the output would depend on the current load of each server. For example:
+
+```
+Request 1 sent to Server 1
+Request 2 sent to Server 1
+Request 3 sent to Server 2
+Request 4 sent to Server 3
+Request 5 sent to Server 1
+```
+
+Here, requests are sent to the server with the least current load.
+
+---
+
+### Conclusion:
+
+This code simulates a basic load balancing system where requests from clients are distributed across servers using different algorithms (Round Robin or Least Connections). The `Server` class tracks the load of each server, while the `LoadBalancer` class manages the distribution of requests based on the chosen algorithm. This simulation helps understand how requests are routed in real-world distributed systems.
